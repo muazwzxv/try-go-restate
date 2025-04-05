@@ -8,7 +8,7 @@ import (
 	restate "github.com/restatedev/sdk-go"
 )
 
-type CreateUser struct{}
+type User struct{}
 
 //nolint:unused
 type createUserRequest struct {
@@ -16,7 +16,13 @@ type createUserRequest struct {
 	Email string `json:"email"`
 }
 
-func (CreateUser) CreateUser(ctx restate.Context, req *createUserRequest) (*entities.UserEntity, error) {
+func (User) HandleCreate(ctx restate.Context, req *createUserRequest) (*entities.UserEntity, error) {
+	// RPC call to other handlers
+	// resp, err := restate.Object[any](ctx, "service-name", "key", "method").Request(restate.Void{})
+	// if err != nil {
+	// 	// Handle error
+	// }
+
 	slog.Info(fmt.Sprintf("Payload coming in, %v", req))
 	return &entities.UserEntity{
 		Name:  req.Name,

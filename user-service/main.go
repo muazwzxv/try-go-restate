@@ -34,7 +34,7 @@ func setup() *application {
 	}
 
 	server := server.NewRestate().
-		Bind(restate.Reflect(handlers.CreateUser{}))
+		Bind(restate.Reflect(handlers.User{}))
 
 	return &application{
 		db:     db,
