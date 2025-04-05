@@ -1,0 +1,14 @@
+services:
+  database:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: restate-demo
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+volumes:
+ mysql_data:
+
