@@ -33,6 +33,9 @@ func setup() *application {
 		os.Exit(1)
 	}
 
+  // create mux handlers for normal sync APIs
+
+  // create restate server for workflows
 	server := server.NewRestate().
 		Bind(restate.Reflect(handlers.User{}))
 
