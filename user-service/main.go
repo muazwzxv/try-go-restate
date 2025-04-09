@@ -8,7 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/muazwzxv/try-go-restate/user-service/db"
-	"github.com/muazwzxv/try-go-restate/user-service/internal/handlers"
+	"github.com/muazwzxv/try-go-restate/user-service/internal/workers"
 	restate "github.com/restatedev/sdk-go"
 	"github.com/restatedev/sdk-go/server"
 )
@@ -33,11 +33,11 @@ func setup() *application {
 		os.Exit(1)
 	}
 
-  // create mux handlers for normal sync APIs
+	// TODO: create Gin mux
 
-  // create restate server for workflows
+	// create restate server for workflows
 	server := server.NewRestate().
-		Bind(restate.Reflect(handlers.User{}))
+		Bind(restate.Reflect(workers.CreateUserWorkflow{}))
 
 	return &application{
 		db:     db,
