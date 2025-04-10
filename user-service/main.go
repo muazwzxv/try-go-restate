@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
+	"time"
 
+	"github.com/gin-contrib/requestid"
+	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/muazwzxv/try-go-restate/user-service/db"
 	"github.com/muazwzxv/try-go-restate/user-service/internal/workers"
@@ -15,13 +19,23 @@ import (
 
 type application struct {
 	db     *sqlx.DB
-	server *server.Restate
+	worker *server.Restate
+	mux    *gin.Engine
+	server *http.Server
 }
 
 func main() {
 	app := setup()
-	if err := app.server.Start(context.Background(), ":9090"); err != nil {
-		slog.Error("application exited unexpectedly,", "err:", err.Error())
+
+	go func() {
+		if err := app.server.ListenAndServe(); err != nil {
+			slog.Error("API server exited unexpectedly,", "err:", err.Error())
+			os.Exit(1)
+		}
+	}()
+
+	if err := app.worker.Start(context.Background(), ":9090"); err != nil {
+		slog.Error("worker exited unexpectedly,", "err:", err.Error())
 		os.Exit(1)
 	}
 }
@@ -33,14 +47,46 @@ func setup() *application {
 		os.Exit(1)
 	}
 
-	// TODO: create Gin mux
+	mux := NewMux()
+	appServer := NewServer()
 
 	// create restate server for workflows
-	server := server.NewRestate().
+	restateServer := server.NewRestate().
 		Bind(restate.Reflect(workers.CreateUserWorkflow{}))
 
 	return &application{
 		db:     db,
-		server: server,
+		worker: restateServer,
+		mux:    mux,
+		server: appServer,
 	}
+}
+
+func NewServer() *http.Server {
+	server := &http.Server{
+		Addr:         fmt.Sprintf(":%d", 3000),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  time.Duration(7) * time.Second,
+		WriteTimeout: time.Duration(7) * time.Second,
+	}
+	return server
+}
+
+func NewMux() *gin.Engine {
+	gin.SetMode(gin.DebugMode)
+	// if cfg.Envrionment == "production" {
+	// 	gin.SetMode(gin.ReleaseMode)
+	// }
+
+	r := gin.Default()
+
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
+	r.Use(
+		requestid.New(
+			requestid.WithCustomHeaderStrKey("x-request-id"),
+		),
+	)
+
+	return r
 }
