@@ -34,3 +34,11 @@
 - Workflow layers API are treated as mechanism for client to trigger any long running workflows
 - Upon API hit, we'll offload the long running running task to restate, the logic layer for worfklow layer API is to do validations necessary prior to triggering restate handlers
 
+
+## Setup install
+
+### Start restate server locally
+
+```sh
+$ restate-server
+```

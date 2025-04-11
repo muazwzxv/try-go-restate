@@ -1,3 +1,5 @@
 package handlers
 
-type UserHandlers struct{}
+func NewHandlers() {
+
+}
