@@ -8,7 +8,7 @@ import (
 )
 
 func NewDB() (*sqlx.DB, error) {
-	dsn := "root:password@(localhost:3306)/restate_demo"
+	dsn := "root:password@(localhost:3306)/restate-demo"
 
 	// Initialize a mysql database connection
 	db, err := sqlx.Connect("mysql", dsn)
