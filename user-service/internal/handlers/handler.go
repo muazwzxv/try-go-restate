@@ -21,3 +21,15 @@ func NewHandlers(app *app.Application) *Handlers {
 		CreateUser: createUserHandler,
 	}
 }
+
+func ResponseBody(data any) map[string]any {
+	return map[string]any{
+		"data": data,
+	}
+}
+
+func ErrorResponse(err error) map[string]any {
+	return map[string]any{
+		"error": err.Error(),
+	}
+}

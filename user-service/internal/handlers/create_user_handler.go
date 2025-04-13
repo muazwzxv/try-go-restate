@@ -12,5 +12,6 @@ type CreateUserHandler struct {
 
 func (h *CreateUserHandler) Handle() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+
 	}
 }
