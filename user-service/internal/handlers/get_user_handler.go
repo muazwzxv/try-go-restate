@@ -3,6 +3,8 @@ package handlers
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,15 +17,28 @@ type GetUserHandler struct {
 	db *sqlx.DB
 }
 
+var (
+	ErrUserNotFound = ErrorDetail{
+		HttpStatusCode: http.StatusNotFound,
+		Message:        "USER_NOT_FOUND",
+	}
+
+	ErrInternalError = ErrorDetail{
+		HttpStatusCode: http.StatusInternalServerError,
+		Message:        "INTERNAL_SERVER_ERROR",
+	}
+)
+
 func (h *GetUserHandler) Handle() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user, err := repository.GetUserByUUID(ctx, "uuid", h.db)
 		if err != nil {
+			slog.ErrorContext(ctx, fmt.Sprintf("error querying user, err: %v", err))
 			if errors.Is(err, sql.ErrNoRows) {
-				ctx.JSON(http.StatusNotFound, nil) // return dem response body
+				ctx.JSON(ErrUserNotFound.HttpStatusCode, ErrorResponse(ErrUserNotFound))
 				return
 			}
-			ctx.JSON(http.StatusInternalServerError, nil) // return dem response body
+			ctx.JSON(ErrInternalError.HttpStatusCode, ErrorResponse(ErrInternalError))
 			return
 		}
 

@@ -28,8 +28,13 @@ func ResponseBody(data any) map[string]any {
 	}
 }
 
-func ErrorResponse(err error) map[string]any {
+func ErrorResponse(errDetail any) map[string]any {
 	return map[string]any{
-		"error": err.Error(),
+		"error": errDetail,
 	}
+}
+
+type ErrorDetail struct {
+	HttpStatusCode int    `json:"code"`
+	Message        string `json:"message"`
 }
