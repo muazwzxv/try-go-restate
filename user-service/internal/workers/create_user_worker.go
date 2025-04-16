@@ -11,7 +11,7 @@ import (
 )
 
 type UserServiceWorkflows struct {
-	db *sqlx.DB
+	DB *sqlx.DB
 }
 
 //nolint:unused
@@ -20,9 +20,9 @@ type createUserRequest struct {
 	Email string `json:"email"`
 }
 
-func (w *UserServiceWorkflows) ExecuteCreateUserWorkflow(ctx restate.Context, req *createUserRequest) (*entities.UserEntity, error) {
+func (w UserServiceWorkflows) ExecuteCreateUserWorkflow(ctx restate.Context, req *createUserRequest) (*entities.UserEntity, error) {
 	// TODO: ensure no existing email
-	_, err := repository.GetUserByEmail(ctx, req.Email, w.db)
+	_, err := repository.GetUserByEmail(ctx, req.Email, w.DB)
 	if err != nil {
 		// TODO: handle error the restate way
 		return nil, nil
