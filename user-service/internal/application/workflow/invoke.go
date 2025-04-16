@@ -12,7 +12,7 @@ import (
 )
 
 type Invoker interface {
-	InvokeWorkflow(logTag string)
+	InvokeWorkflow(ctx context.Context, params *InvocationParams) ([]byte, error)
 }
 
 type InvocationHandler struct {
@@ -21,8 +21,9 @@ type InvocationHandler struct {
 }
 
 type InvocationParams struct {
-	Workflow       WorkflowTriggerInfo
-	Payload        []byte
+	Workflow WorkflowTriggerInfo
+	Payload  []byte
+	// use a stable uuid as an idempotency key; Restate deduplicates for us
 	IdempotencyKey string
 }
 
@@ -79,33 +80,28 @@ func DefaultConfig() ClientConfig {
 var RESTATE_URL = ""
 
 // Durable RPC call to the product service
-func (i *InvocationHandler) InvokeWorkflow(ctx context.Context, params *InvocationParams) {
+func (i *InvocationHandler) InvokeWorkflow(ctx context.Context, params *InvocationParams) ([]byte, error) {
 	// Restate registers the request and makes sure it runs to completion exactly once
 	// This is a call to Virtual Object so we can be sure only one reservation is made concurrently
-
 	var (
 		httpReq *http.Request
 		err     error
 	)
 	url := fmt.Sprintf("%s/%s/%s", RESTATE_URL, params.Workflow.ServiceName, params.Workflow.HandlerName)
-
 	if params.Payload != nil {
-		// TODO: handle error gracefully
 		httpReq, err = http.NewRequest(params.Workflow.Method, url, nil)
 		if err != nil {
 			slog.Error("Failed creating http request", "err", err.Error())
-			return
+			return nil, err
 		}
 	} else {
-		// TODO: handle error gracefully
 		httpReq, err = http.NewRequest(params.Workflow.Method, url, bytes.NewBuffer(params.Payload))
 		if err != nil {
 			slog.Error("Failed creating http request", "err", err.Error())
-			return
+			return nil, err
 		}
 	}
 
-	// use a stable uuid as an idempotency key; Restate deduplicates for us
 	if params.IdempotencyKey != "" {
 		httpReq.Header.Set("idempotency-key", params.IdempotencyKey)
 	}
@@ -113,15 +109,17 @@ func (i *InvocationHandler) InvokeWorkflow(ctx context.Context, params *Invocati
 	resp, err := i.httpClient.Do(httpReq)
 	if err != nil {
 		slog.Error("Failed calling http request", "err", err.Error())
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		slog.Error("Failed parsing http response", "err", err.Error())
-		return
+		return nil, err
 	}
 
 	slog.Info("Response: " + string(body))
+
+	return body, nil
 }
