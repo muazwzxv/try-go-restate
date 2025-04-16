@@ -8,7 +8,7 @@ import (
 	restate "github.com/restatedev/sdk-go"
 )
 
-type CreateUserWorkflow struct{}
+type UserServiceWorkflows struct{}
 
 //nolint:unused
 type createUserRequest struct {
@@ -16,7 +16,7 @@ type createUserRequest struct {
 	Email string `json:"email"`
 }
 
-func (CreateUserWorkflow) ExecuteCreateUserWorkflow(ctx restate.Context, req *createUserRequest) (*entities.UserEntity, error) {
+func (UserServiceWorkflows) ExecuteCreateUserWorkflow(ctx restate.Context, req *createUserRequest) (*entities.UserEntity, error) {
 	// RPC call to other handlers
 	// resp, err := restate.Object[any](ctx, "service-name", "key", "method").Request(restate.Void{})
 	// if err != nil {

@@ -22,11 +22,7 @@ var (
 		HttpStatusCode: http.StatusNotFound,
 		Message:        "USER_NOT_FOUND",
 	}
-
-	ErrInternalError = ErrorDetail{
-		HttpStatusCode: http.StatusInternalServerError,
-		Message:        "INTERNAL_SERVER_ERROR",
-	}
+	ErrUserxxx = ErrorDetail{}
 )
 
 func (h *GetUserHandler) Handle() gin.HandlerFunc {

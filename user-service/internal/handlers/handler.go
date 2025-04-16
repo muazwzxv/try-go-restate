@@ -1,6 +1,22 @@
 package handlers
 
-import app "github.com/muazwzxv/try-go-restate/user-service/internal/application"
+import (
+	"net/http"
+
+	app "github.com/muazwzxv/try-go-restate/user-service/internal/application"
+)
+
+var (
+	ErrBadRequest = ErrorDetail{
+		HttpStatusCode: http.StatusBadRequest,
+		Message:        "BAD_REQUEST",
+	}
+
+	ErrInternalError = ErrorDetail{
+		HttpStatusCode: http.StatusInternalServerError,
+		Message:        "INTERNAL_SERVER_ERROR",
+	}
+)
 
 type Handlers struct {
 	GetUser    GetUserHandler
@@ -13,7 +29,8 @@ func NewHandlers(app *app.Application) *Handlers {
 	}
 
 	createUserHandler := CreateUserHandler{
-		db: app.DB,
+		db:              app.DB,
+		WorkflowInvoker: nil, // TODO: register invoker workflow
 	}
 
 	return &Handlers{

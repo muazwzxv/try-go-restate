@@ -35,7 +35,7 @@ func Setup() *Application {
 
 	// create restate server for workflows
 	restateServer := server.NewRestate().
-		Bind(restate.Reflect(workers.CreateUserWorkflow{}))
+		Bind(restate.Reflect(workers.UserServiceWorkflows{}))
 
 	return &Application{
 		DB:     db,
