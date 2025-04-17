@@ -1,7 +1,9 @@
 package workers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -35,17 +37,24 @@ func (c *CreateUserRequest) ToJSON() []byte {
 	return jsonData
 }
 
+var (
+	ErrUserExist = errors.New("USER_EXIST_ERROR")
+	ErrDatabase  = errors.New("DATABASE_ERROR")
+)
+
 func (w UserServiceWorkflows) ExecuteCreateUserWorkflow(ctx restate.Context, req *CreateUserRequest) (*entities.UserEntity, error) {
-	// TODO: ensure no existing email
-	_, err := repository.GetUserByEmail(ctx, req.Email, w.DB)
-	if err != nil {
-		// TODO: handle error the restate way
-		return nil, nil
+	user, err := repository.GetUserByEmail(ctx, req.Email, w.DB)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, ErrDatabase
 	}
 
-	// TODO: create user
+	if err == nil && user.Status == "ACTIVE" {
+		return nil, ErrUserExist
+	}
 
 	slog.Info(fmt.Sprintf("Payload coming in, %v", req))
+
+	// TODO: create user entry in the database
 	return &entities.UserEntity{
 		Name:  req.Name,
 		Email: req.Email,
