@@ -3,6 +3,7 @@ package workflow
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -12,7 +13,7 @@ import (
 )
 
 type Invoker interface {
-	InvokeWorkflow(ctx context.Context, params *InvocationParams) ([]byte, error)
+	InvokeWorkflow(ctx context.Context, params *InvocationParams) (*InvocationResponse, error)
 }
 
 type InvocationHandler struct {
@@ -80,7 +81,7 @@ func DefaultConfig() ClientConfig {
 var RESTATE_URL = ""
 
 // Durable RPC call to the product service
-func (i *InvocationHandler) InvokeWorkflow(ctx context.Context, params *InvocationParams) ([]byte, error) {
+func (i *InvocationHandler) InvokeWorkflow(ctx context.Context, params *InvocationParams) (*InvocationResponse, error) {
 	// Restate registers the request and makes sure it runs to completion exactly once
 	// This is a call to Virtual Object so we can be sure only one reservation is made concurrently
 	var (
@@ -119,7 +120,21 @@ func (i *InvocationHandler) InvokeWorkflow(ctx context.Context, params *Invocati
 		return nil, err
 	}
 
-	slog.Info("Response: " + string(body))
+	var invocationResponse InvocationResponse
+	err = json.Unmarshal(body, &invocationResponse)
+	if err != nil {
+		slog.Error("Failed unmarshaling response into struct", "err", err.Error())
+		return nil, err
+	}
 
-	return body, nil
+	slog.Info("Parsed invocation",
+		"invocationId", invocationResponse.InvocationID,
+		"status", invocationResponse.Status)
+
+	return &invocationResponse, nil
+}
+
+type InvocationResponse struct {
+	InvocationID string `json:"invocationId"`
+	Status       string `json:"status"`
 }

@@ -11,16 +11,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/muazwzxv/try-go-restate/user-service/db"
+	"github.com/muazwzxv/try-go-restate/user-service/internal/application/workflow"
 	"github.com/muazwzxv/try-go-restate/user-service/internal/workers"
 	restate "github.com/restatedev/sdk-go"
 	"github.com/restatedev/sdk-go/server"
 )
 
 type Application struct {
-	DB     *sqlx.DB
-	Worker *server.Restate
-	Mux    *gin.Engine
-	Server *http.Server
+	DB              *sqlx.DB
+	Worker          *server.Restate
+	Mux             *gin.Engine
+	Server          *http.Server
+	WorkflowInvoker workflow.Invoker
 }
 
 func Setup() *Application {
@@ -32,6 +34,12 @@ func Setup() *Application {
 
 	mux := NewMux()
 	appServer := NewServer()
+	workflowInvoker := workflow.NewInvocationHandler("localhost:8080", &workflow.ClientConfig{
+		Timeout:             time.Duration(7 * time.Second),
+		IdleConnTimeout:     time.Duration(7 * time.Second),
+		MaxIdleConns:        20,
+		MaxIdleConnsPerHost: 4,
+	})
 
 	// create restate server for workflows
 	restateServer := server.NewRestate().
@@ -40,10 +48,11 @@ func Setup() *Application {
 		}))
 
 	return &Application{
-		DB:     db,
-		Worker: restateServer,
-		Mux:    mux,
-		Server: appServer,
+		DB:              db,
+		Worker:          restateServer,
+		Mux:             mux,
+		Server:          appServer,
+		WorkflowInvoker: workflowInvoker,
 	}
 }
 

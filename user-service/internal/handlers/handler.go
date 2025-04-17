@@ -55,3 +55,7 @@ type ErrorDetail struct {
 	HttpStatusCode int    `json:"code"`
 	Message        string `json:"message"`
 }
+
+type HeaderKeys string
+
+var HeaderIdempotencyV1 HeaderKeys = "x-idempotency-key-v1"

@@ -1,6 +1,7 @@
 package workers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 
@@ -15,12 +16,26 @@ type UserServiceWorkflows struct {
 }
 
 //nolint:unused
-type createUserRequest struct {
+type CreateUserRequest struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
-func (w UserServiceWorkflows) ExecuteCreateUserWorkflow(ctx restate.Context, req *createUserRequest) (*entities.UserEntity, error) {
+func (c *CreateUserRequest) ToJSON() []byte {
+	if c == nil {
+		return nil
+	}
+
+	jsonData, err := json.Marshal(c)
+	if err != nil {
+		slog.Error("Failed to marshal JSON", "err", err.Error())
+		return nil
+	}
+
+	return jsonData
+}
+
+func (w UserServiceWorkflows) ExecuteCreateUserWorkflow(ctx restate.Context, req *CreateUserRequest) (*entities.UserEntity, error) {
 	// TODO: ensure no existing email
 	_, err := repository.GetUserByEmail(ctx, req.Email, w.DB)
 	if err != nil {
