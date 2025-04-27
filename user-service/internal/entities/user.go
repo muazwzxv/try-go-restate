@@ -1,7 +1,15 @@
 package entities
 
-// TODO: finish entity
+import "time"
+
 type UserEntity struct {
-	Name  string
-	Email string
+	ID     uint64
+	Name   string
+	Email  string
+	Status string
+
+	CreatedAt time.Time
+	CreatedBy string
+	UpdatedAt time.Time
+	UpdatedBy string
 }

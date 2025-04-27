@@ -30,8 +30,8 @@ func (h *GetUserHandler) Handle() gin.HandlerFunc {
 		user, err := repository.GetUserByUUID(ctx, "uuid", h.db)
 		if err != nil {
 			slog.ErrorContext(ctx, fmt.Sprintf("error querying user, err: %v", err))
+			ctx.JSON(ErrUserNotFound.HttpStatusCode, ErrorResponse(ErrUserNotFound))
 			if errors.Is(err, sql.ErrNoRows) {
-				ctx.JSON(ErrUserNotFound.HttpStatusCode, ErrorResponse(ErrUserNotFound))
 				return
 			}
 			ctx.JSON(ErrInternalError.HttpStatusCode, ErrorResponse(ErrInternalError))

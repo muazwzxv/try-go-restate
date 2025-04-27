@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/muazwzxv/try-go-restate/user-service/internal/entities/dto"
 	"golang.org/x/net/context"
 )
 
@@ -37,8 +38,8 @@ var (
 
 	// nolint:unused
 	createUser = `
-    INSERT
-      uuid, name, email, status, created_at, updated_by
+    INSERT INTO user
+      (uuid, name, email, status, created_by, updated_by)
     VALUES
       (?, ?, ?, ?, ?, ?)`
 )
@@ -71,4 +72,19 @@ func GetUserByEmail(ctx context.Context, email string, db *sqlx.DB) (*UserModel,
 	}
 
 	return user, nil
+}
+
+func InsertUser(ctx context.Context, req *dto.CreateUserDto, db *sqlx.DB) error {
+	_, err := db.ExecContext(ctx, createUser,
+		req.UUID,
+		req.Name,
+		req.Email,
+		req.Status,
+		req.CreatedBy,
+		req.UpdatedBy,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
