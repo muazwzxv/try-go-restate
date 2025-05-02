@@ -8,3 +8,6 @@ migrations.up:
 
 migrations.down:
 	migrate -path ./db/migrations -database "${DB_SOURCE}" -verbose down $(N_MIGRATION)
+
+proto:
+	protoc --twirp_out=. --go_out=. internal/rpc/user.proto

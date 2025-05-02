@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package tryrestate.userservice;
+
+option go_package = "service/userservice";
+
+service UserService {
+  rpc CreateUser(createUserRequest) returns (createUserResponse);
+}
+
+message createUserRequest {
+  string name = 1;
+  string email = 2;
+  string age = 3;
+  string address = 4;
+}
+
+message createUserResponse {
+  string referenceID = 1;
+  string email = 2;
+  string status = 3;
+}
+
